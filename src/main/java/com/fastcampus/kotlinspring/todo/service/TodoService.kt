@@ -1,63 +1,54 @@
-package com.fastcampus.kotlinspring.todo.service;
+package com.fastcampus.kotlinspring.todo.service
 
-import com.fastcampus.kotlinspring.todo.domain.Todo;
-import com.fastcampus.kotlinspring.todo.domain.TodoRepository;
-import com.fastcampus.kotlinspring.todo.api.model.TodoRequest;
-import java.time.LocalDateTime;
-import java.util.List;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.server.ResponseStatusException;
+import com.fastcampus.kotlinspring.todo.api.model.TodoRequest
+import com.fastcampus.kotlinspring.todo.domain.Todo
+import com.fastcampus.kotlinspring.todo.domain.TodoRepository
+import org.springframework.data.domain.Sort
+import org.springframework.data.querydsl.QSort.by
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDateTime
+import javax.transaction.Transactional
 
 @Service
-public class TodoService {
+class TodoService(
+    private val todoRepository: TodoRepository
+) {
 
-    private final TodoRepository todoRepository;
+    @Transactional
+    fun findAll() : List<Todo> =
+        todoRepository.findAll(by(Sort.Direction.DESC, "id"))
 
-    public TodoService(TodoRepository todoRepository) {
-        this.todoRepository = todoRepository;
-    }
+    @Transactional
+    fun findById(id: Long) : Todo =
+        todoRepository.findByIdOrNull(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
-    @Transactional(readOnly = true)
-    public List<Todo> findAll() {
-        return todoRepository.findAll(Sort.by(Direction.DESC, "id"));
-    }
+    @Transactional
+    fun create(request: TodoRequest) : Todo {
+        checkNotNull(request) { "TodoRequest is null"}
 
-    @Transactional(readOnly = true)
-    public Todo findById(Long id) {
-        return todoRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        val todo = Todo {
+            title = request.title,
+            description = request.description,
+            done = request.done,
+            createAt = LocalDateTime.now()
+        }
+
+        return todoRepository.save(todo)
     }
 
     @Transactional
-    public Todo create(TodoRequest request) {
-        Assert.notNull(request, "TodoRequest is null");
+    fun update(id: Long, request: TodoRequest?) : Todo {
+        checkNotNull(request) { "TodoRequest is null"}
 
-        Todo todo = Todo.builder()
-            .title(request.getTitle())
-            .description(request.getDescription())
-            .done(false)
-            .createdAt(LocalDateTime.now())
-            .build();
-        return todoRepository.save(todo);
+        return findById(id).let {
+            it.update(request.title, request.description, request.done)
+            todoRepository.save(it)
+        }
     }
 
     @Transactional
-    public Todo update(Long id, TodoRequest request) {
-        Assert.notNull(request, "TodoRequest is null");
-
-        Todo todo = findById(id);
-        todo.update(request.getTitle(),
-                    request.getDescription(),
-                    request.getDone());
-        return todoRepository.save(todo);
-    }
-
-    public void delete(Long id) {
-        todoRepository.deleteById(id);
-    }
+    fun delete(id: Long) = todoRepository.deleteById(id)
 }

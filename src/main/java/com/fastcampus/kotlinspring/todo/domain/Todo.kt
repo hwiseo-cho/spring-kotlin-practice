@@ -1,49 +1,36 @@
-package com.fastcampus.kotlinspring.todo.domain;
+package com.fastcampus.kotlinspring.todo.domain
 
-import java.time.LocalDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import java.time.LocalDateTime
+import javax.persistence.*
 
-import lombok.*;
-
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Builder
 @Entity
 @Table(name = "todos")
-public class Todo {
-
+class Todo(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    val id: Long? = 0,
 
     @Column(name = "title")
-    private String title;
+    var title: String,
 
     @Lob
     @Column(name = "description")
-    private String description;
+    var description: String,
 
     @Column(name = "done")
-    private Boolean done;
+    var done: Boolean,
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    var createdAt: LocalDateTime,
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "update_at")
+    var updateAt: LocalDateTime? = null
+) {
 
-    public void update(String title, String description, Boolean done) {
-        this.title = title;
-        this.description = description;
-        this.done = done != null && done;
-        this.updatedAt = LocalDateTime.now();
+    fun update(title: String, description: String, done: Boolean) {
+        this.title = title
+        this.description = description
+        this.done = done
+        this.updateAt = LocalDateTime.now()
     }
 }

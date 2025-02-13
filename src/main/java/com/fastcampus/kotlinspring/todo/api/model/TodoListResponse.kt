@@ -1,33 +1,19 @@
-package com.fastcampus.kotlinspring.todo.api.model;
+package com.fastcampus.kotlinspring.todo.api.model
 
-import com.fastcampus.kotlinspring.todo.domain.Todo;
-import java.util.List;
-import java.util.stream.Collectors;
-import lombok.Data;
+import com.fastcampus.kotlinspring.todo.domain.Todo
+import com.fasterxml.jackson.annotation.JsonIgnore
 
-@Data
-public class TodoListResponse {
+data class TodoListResponse(
+    val items: List<TodoResponse>,
+) {
+    val size: Int
+        @JsonIgnore
+        get() = items.size
 
-    private final List<TodoResponse> items;
+    fun get(index: Int) = items[index]
 
-    private TodoListResponse(List<TodoResponse> items) {
-        this.items = items;
+    companion object {
+        fun of (todoList: List<Todo>) =
+            TodoListResponse(todoList.map(TodoResponse::of))
     }
-
-    public int size() {
-        return items.size();
-    }
-
-    public TodoResponse get(int index) {
-        return items.get(index);
-    }
-
-    public static TodoListResponse of(List<Todo> todoList) {
-        List<TodoResponse> todoListResponse = todoList.stream()
-            .map(TodoResponse::of)
-            .collect(Collectors.toList());
-
-        return new TodoListResponse(todoListResponse);
-    }
-
 }

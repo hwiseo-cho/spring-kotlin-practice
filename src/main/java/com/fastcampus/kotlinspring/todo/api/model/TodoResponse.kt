@@ -1,38 +1,29 @@
-package com.fastcampus.kotlinspring.todo.api.model;
+package com.fastcampus.kotlinspring.todo.api.model
 
-import com.fastcampus.kotlinspring.todo.domain.Todo;
-import java.time.LocalDateTime;
-import lombok.Builder;
-import lombok.Data;
-import org.springframework.util.Assert;
+import com.fastcampus.kotlinspring.todo.domain.Todo
+import java.time.LocalDateTime
 
-@Data
-@Builder
-public class TodoResponse {
+data class TodoResponse(
+    val id: Long,
+    val title: String,
+    val description: String,
+    val done: Boolean,
+    val createdAt: LocalDateTime,
+    val updateAt: LocalDateTime?
+) {
 
-    private Long id;
+    companion object {
+        fun of (todo: Todo?): TodoResponse {
+            checkNotNull(todo) {"Todo is null"}
 
-    private String title;
-
-    private String description;
-
-    private Boolean done;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    public static TodoResponse of(Todo todo) {
-        Assert.notNull(todo, "Todo is null");
-
-        return TodoResponse.builder()
-            .id(todo.getId())
-            .title(todo.getTitle())
-            .description(todo.getDescription())
-            .done(todo.getDone())
-            .createdAt(todo.getCreatedAt())
-            .updatedAt(todo.getUpdatedAt())
-            .build();
+            return TodoResponse(
+                id = todo.id!!,
+                title = todo.title,
+                description = todo.description,
+                done = todo.done,
+                createdAt = todo.createdAt,
+                updateAt = todo.updatedAt
+            )
+        }
     }
-
 }
